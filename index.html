@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parametric Skills</title>
+<meta name="description" content="ParametricSkills converts textual agent skills into LoRA adapters at test time with a hypernetwork, so skills no longer crowd the context and can accumulate for continual learning.">
+<meta name="theme-color" content="#f6f7fb">
+<meta property="og:title" content="Parametric Skills">
+<meta property="og:description" content="Turning textual agent skills into LoRA adapters at test time.">
+<meta property="og:image" content="assets/img/pipeline.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="assets/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+
+<header class="nav" id="top">
+  <div class="nav-inner">
+    <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>ParametricSkills</a>
+    <nav aria-label="Sections">
+      <a href="#overview">Overview</a>
+      <a href="#method">Method</a>
+      <a href="#data">Data</a>
+      <a href="#results">Results</a>
+      <a href="#evolution">Evolution</a>
+      <a href="#citation">Citation</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<!-- ================= Hero ================= -->
+<section class="hero">
+  <div class="aurora" aria-hidden="true"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i></div>
+  <div class="gridlines" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Technical Report · 2026</p>
+    <h1 class="title"><span class="grad">Parametric</span> Skills</h1>
+    <p class="subtitle">Compile a textual agent skill into a LoRA adapter in one hypernetwork forward pass.
+      Skills stop crowding the context and start accumulating in the weights.</p>
+
+    <ul class="authors">
+      <li>Xuan Zhao<sup>1,2*</sup></li>
+      <li>Haonan He<sup>1,2*†</sup></li>
+      <li>Qingyu Yang<sup>1,3*</sup></li>
+      <li>Minglei Li<sup>1,4</sup></li>
+      <li>Zelin Tan<sup>1,2</sup></li>
+      <li>Bo Wan<sup>2</sup></li>
+      <li>Jingqi Ye<sup>1,2</sup></li>
+      <li>Chen Zhang<sup>1</sup></li>
+      <li>Shuyue Hu<sup>1</sup></li>
+      <li>Peng Ye<sup>1,4,5‡</sup></li>
+    </ul>
+    <ul class="affils">
+      <li><sup>1</sup>Shanghai Artificial Intelligence Laboratory</li>
+      <li><sup>2</sup>University of Science and Technology of China</li>
+      <li><sup>3</sup>KTH Royal Institute of Technology</li>
+      <li><sup>4</sup>Fudan University</li>
+      <li><sup>5</sup>The Chinese University of Hong Kong</li>
+    </ul>
+    <p class="notes"><span class="nw">* Equal contribution</span> &nbsp;·&nbsp; <span class="nw">† Project lead</span> &nbsp;·&nbsp; <span class="nw">‡ Corresponding author</span></p>
+
+    <div class="buttons">
+      <!-- Placeholders: set href and remove aria-disabled when the links exist. -->
+      <a class="btn" href="#" aria-disabled="true" title="Coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6z M14 2v6h6"/></svg>Paper<span class="soon">soon</span></a>
+      <a class="btn" href="#" aria-disabled="true" title="Coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z M8 9h8 M8 13h8 M8 17h5"/></svg>arXiv<span class="soon">soon</span></a>
+      <a class="btn" href="#" aria-disabled="true" title="Coming soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16"/></svg>Code<span class="soon">soon</span></a>
+      <a class="btn btn-ghost" href="#citation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h4v4H8c0 3 1 4 3 5 M14 7h4v4h-3c0 3 1 4 3 5"/></svg>BibTeX</a>
+    </div>
+
+    <!-- Animated illustration: textual skill -> hypernetwork -> LoRA factors. -->
+    <figure class="demo" aria-label="Illustration: a textual skill is read by the hypernetwork and turned into LoRA factors B and A.">
+      <div class="demo-card demo-doc glass">
+        <div class="demo-head"><span class="pill pill-violet">Textual skill</span><span class="demo-hint">example</span></div>
+        <pre class="doc" id="demo-doc" aria-hidden="true"></pre>
+      </div>
+      <div class="demo-net" aria-hidden="true">
+        <svg id="demo-net" viewBox="0 0 280 200"></svg>
+        <span class="net-label">Hypernetwork h<sub>θ</sub> · one forward pass</span>
+      </div>
+      <div class="demo-card demo-lora glass">
+        <div class="demo-head"><span class="pill pill-cyan">Parametric skill φ</span><span class="demo-hint">0 context tokens</span></div>
+        <div class="lora" aria-hidden="true">
+          <div class="mat-wrap"><div class="mat mat-b" id="mat-b"></div><span class="mat-cap">B</span></div>
+          <span class="op">×</span>
+          <div class="mat-wrap"><div class="mat mat-a" id="mat-a"></div><span class="mat-cap">A</span></div>
+        </div>
+        <div class="lora-cap" aria-hidden="true">ΔW = BA</div>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= Overview ================= -->
+<section id="overview" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">01</span>Overview</h2>
+    <p class="tldr">Skills are textual recipes that encode proven problem-solving experience for LLM agents.
+      Their value is capped by how well the model reads and follows them, and text-space skill evolution never
+      touches the model itself. <b>ParametricSkills</b> trains a hypernetwork that compiles a textual skill,
+      both its content and how to use it, into a LoRA adapter at test time.</p>
+
+    <div class="compare">
+      <div class="lane glass">
+        <div class="lane-head"><span class="pill pill-gray">In-context skill</span></div>
+        <div class="ctx" aria-label="Context window holds the system prompt, the full skill text, and the task">
+          <span class="seg seg-sys">system</span>
+          <span class="seg seg-skill">skill text · skill text · skill text · skill text</span>
+          <span class="seg seg-task">task</span>
+        </div>
+        <p>The skill competes for context, and the model has to locate and follow it on every step.</p>
+      </div>
+      <div class="lane glass lane-ours">
+        <div class="lane-head"><span class="pill pill-violet">Parametric skill</span></div>
+        <div class="ctx" aria-label="Context window holds only the system prompt and the task; the skill is an adapter on the model">
+          <span class="seg seg-sys">system</span>
+          <span class="seg seg-task">task</span>
+          <span class="seg seg-free">free context</span>
+          <span class="adapter">LLM + φ</span>
+        </div>
+        <p>The skill lives in a LoRA adapter, so it costs no context and can be merged, swapped, and accumulated.</p>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat glass"><span class="stat-v" data-count="106435">106,435</span><span class="stat-k">skill documents for Stage 1</span></div>
+      <div class="stat glass"><span class="stat-v" data-count="12">12</span><span class="stat-k">skill domains</span></div>
+      <div class="stat glass"><span class="stat-v" data-count="95.26" data-dec="2" data-suffix="%">95.26%</span><span class="stat-k">ALFWorld success, <span class="nw">Qwen3.5-9B</span></span></div>
+      <div class="stat glass"><span class="stat-v" data-count="65.7" data-dec="2" data-prefix="+">+65.70</span><span class="stat-k">points over ICL, ALFWorld, <span class="nw">Qwen3.5-4B</span></span></div>
+    </div>
+
+    <details class="abstract glass">
+      <summary>Read the abstract</summary>
+      <p>For LLMs, skills are textual recipes encoding mature problem-solving experience. Despite widespread deployment,
+      their utility is limited by the model's ability to comprehend and follow skill instructions. To address this
+      limitation, we propose ParametricSkills, a framework that parameterizes textual skills at test time, enabling
+      context-free management of the full skill lifecycle. Specifically, we first construct a large-scale and
+      high-quality skill collection, and then synthesize single-turn and multi-turn skill-exploitation trajectories.
+      Using this data, we then train a hypernetwork that parameterizes both the content and the exploitation
+      methodologies of skills by converting textual skills into LoRA adapters. To facilitate the real-world application
+      of our framework, we further align the hypernetwork on complex, long-horizon trajectories collected with
+      OpenCode, enabling the models to operate reliably in realistic interactive workflows with ParametricSkills.
+      Across evaluations, ParametricSkills effectively parameterizes skills, yielding substantial gains in task
+      completion. More notably, as parametric skills accumulate as adapters rather than crowding the context, they
+      open a preliminary but promising path toward continual learning at test time.</p>
+    </details>
+  </div>
+</section>
+
+<!-- ================= Method ================= -->
+<section id="method" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">02</span>Method</h2>
+    <figure class="figure glass">
+      <div class="fig-scroll" tabindex="0" aria-label="Method figure, scrolls sideways on small screens">
+        <a href="assets/img/pipeline.png" target="_blank" rel="noopener"><img src="assets/img/pipeline.png" width="3251" height="1326" alt="Overview of ParametricSkills: (I) parametric skill generation, (II) skill-reconstruction pretraining with structured reweighting, (III) skill-exploitation fine-tuning with and without a coding-agent harness, (IV) task-level skill evolution and continual learning." loading="lazy"></a>
+      </div>
+      <figcaption>Overview of ParametricSkills. Open the image for full resolution.<span class="swipe-hint"> Swipe sideways to see the whole pipeline.</span></figcaption>
+    </figure>
+    <ol class="timeline">
+      <li class="step glass">
+        <span class="step-tag">I</span>
+        <h3>Parametric skill generation</h3>
+        <p>A frozen text encoder reads the skill document; the hypernetwork maps it to per-layer LoRA factors that
+        condition the frozen base model: W<sub>0</sub> + ΔW.</p>
+      </li>
+      <li class="step glass">
+        <span class="step-tag">II</span>
+        <h3>Skill-reconstruction pretraining</h3>
+        <p>Stage 1 trains the adapter to reconstruct the full skill document, with extra weight on code, procedure,
+        and instruction spans so the details survive compression.</p>
+      </li>
+      <li class="step glass">
+        <span class="step-tag">III</span>
+        <h3>Skill-exploitation fine-tuning</h3>
+        <p>Stage 2 supervises single- and multi-turn skill use without a harness; Stage 3 aligns on long-horizon
+        OpenCode agent trajectories with tools and feedback.</p>
+      </li>
+      <li class="step glass">
+        <span class="step-tag">IV</span>
+        <h3>Evolution &amp; continual learning</h3>
+        <p>A verifier accepts or rejects candidate answers and the text skill is revised and recompiled; accepted
+        adapters merge into a global parametric skill by EMA.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= Data ================= -->
+<section id="data" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">03</span>Training data</h2>
+    <p class="lead">Skills are crawled from the web or summarized from real agent trajectories, then expanded into
+    skill-use trajectories. Outer rings show primary-use domains; inner rings show token-length buckets.</p>
+    <div class="cards3">
+      <div class="dcard glass"><span class="dcard-n">Stage 1</span><span class="dcard-v">106,435</span><span class="dcard-k">skill documents</span></div>
+      <div class="dcard glass"><span class="dcard-n">Stage 2</span><span class="dcard-v">115,079</span><span class="dcard-k">trajectories without harness</span></div>
+      <div class="dcard glass"><span class="dcard-n">Stage 3</span><span class="dcard-v">12,659</span><span class="dcard-k">OpenCode trajectories with harness</span></div>
+    </div>
+    <figure class="figure glass">
+      <div class="fig-scroll" tabindex="0" aria-label="Training data figure, scrolls sideways on small screens">
+        <a href="assets/img/data_rings.png" target="_blank" rel="noopener"><img src="assets/img/data_rings.png" width="2544" height="1161" alt="Domain and token-length composition of the three training-stage datasets." loading="lazy"></a>
+      </div>
+      <figcaption>Open the image for full resolution.<span class="swipe-hint"> Swipe sideways to see all three stages.</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ================= Results ================= -->
+<section id="results" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">04</span>Results</h2>
+    <div class="toolbar">
+      <div class="seg-ctl" role="tablist" aria-label="Benchmark">
+        <button role="tab" id="tab-alf" aria-selected="true" aria-controls="panel-results" data-bench="alfworld">ALFWorld</button>
+        <button role="tab" id="tab-se" aria-selected="false" aria-controls="panel-results" data-bench="skilleval" tabindex="-1">SkillEval</button>
+      </div>
+      <button class="ghost-btn" type="button" aria-pressed="false" id="toggle-table">Table view</button>
+    </div>
+    <div id="panel-results" role="tabpanel" aria-labelledby="tab-alf">
+      <p class="chart-title" id="results-title"></p>
+      <div class="legend" id="results-legend" aria-hidden="true">
+        <span><i class="sw sw-ours"></i>ParametricSkills (ours)</span>
+        <span><i class="sw sw-base"></i>Baselines</span>
+        <span id="legend-err" hidden><i class="sw sw-err"></i>± std over four runs</span>
+      </div>
+      <div class="multiples" id="results-charts"></div>
+      <div class="table-wrap glass" id="results-table" hidden></div>
+      <p class="note" id="results-note"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Evolution ================= -->
+<section id="evolution" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">05</span>Self-evolution &amp; continual learning</h2>
+    <div class="evo">
+      <div class="evo-text">
+        <p>Skills are revised in text space and recompiled into adapters, and only verifier-accepted candidates are
+        kept. For continual learning, each accepted task adapter is normalized and merged into a global parametric
+        skill by an exponential moving average, with no backpropagation at test time.</p>
+        <div class="kicker glass">
+          <span class="kicker-v">+9.58</span>
+          <span class="kicker-k">K1 points from continual learning over no evolution, single-skill subset of SkillEval, Qwen3-8B.</span>
+        </div>
+      </div>
+      <div class="panel glass">
+        <h3>SkillEval K1 <span>single-skill subset, Qwen3-8B, mean ± std</span></h3>
+        <div id="evo-chart"></div>
+      </div>
+    </div>
+    <div class="ablations">
+      <div class="panel glass">
+        <h3>Multi-skill composition <span>SkillEval overall, Qwen3-8B</span></h3>
+        <div id="abl-compose"></div>
+        <p class="note">Concatenating skill texts before compiling one adapter beats merging separate adapters.</p>
+      </div>
+      <div class="panel glass">
+        <h3>Training-stage ablation <span>SkillEval overall, Qwen3.5-9B, mean ± std</span></h3>
+        <div id="abl-stage"></div>
+        <p class="note">Dropping Stage 2 costs the most, 12.99 points.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Citation ================= -->
+<section id="citation" class="section">
+  <div class="wrap">
+    <h2 class="h2"><span class="num">06</span>Citation</h2>
+    <div class="bib glass">
+      <button class="ghost-btn copy" type="button" id="copy-bib">Copy</button>
+<pre id="bibtex"><code>@article{zhao2026parametricskills,
+  title   = {Parametric Skills},
+  author  = {Zhao, Xuan and He, Haonan and Yang, Qingyu and Li, Minglei and
+             Tan, Zelin and Wan, Bo and Ye, Jingqi and Zhang, Chen and
+             Hu, Shuyue and Ye, Peng},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p>Contact: <a href="mailto:yepeng@pjlab.org.cn">yepeng@pjlab.org.cn</a></p>
+    <p class="muted">© 2026 the authors · Set in Inter (SIL Open Font License).</p>
+  </div>
+</footer>
+
+<div class="tooltip" id="tooltip" role="status" aria-live="polite"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
